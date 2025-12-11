@@ -1,1 +1,18 @@
-spring.application.name=dogcat
+spring:
+  config:
+    import: optional:application-local.yaml
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dogcat
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080

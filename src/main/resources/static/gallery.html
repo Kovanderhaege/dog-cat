@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gallery</title>
+</head>
+<body>
+
+<h2>Gallery</h2>
+
+<div id="images"></div>
+
+<br>
+<button onclick="window.location.href='index.html'">Back to Upload</button>
+
+<script>
+    async function loadImages() {
+        const response = await fetch("/images");
+        const data = await response.json();
+
+        const container = document.getElementById("images");
+        container.innerHTML = "";
+
+        data.forEach(img => {
+            const div = document.createElement("div");
+            div.innerHTML = `
+                <p>ID: ${img.id}</p>
+            <img src="/images/${img.id}/file" width="200">
+                <hr>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    loadImages();
+</script>
+
+</body>
+</html>
