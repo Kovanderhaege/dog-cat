@@ -39,6 +39,7 @@ public class ImageService {
 
         ImagePrediction img = new ImagePrediction();
         img.setFilePath(destination.toString());
+        img.setStatus(PredictionStatus.PENDING);
 
         ImagePrediction saved = repository.save(img);
 
@@ -50,6 +51,7 @@ public class ImageService {
                 .map(img -> new ImagePredictionDto(
                         img.getId(),
                         img.getFilePath(),
+                        img.getStatus().name(),
                         img.getPredictedLabel(),
                         img.getConfidence(),
                         img.getCreatedAt()
@@ -63,6 +65,7 @@ public class ImageService {
                 .map(img -> new ImagePredictionDto(
                         img.getId(),
                         img.getFilePath(),
+                        img.getStatus().name(),
                         img.getPredictedLabel(),
                         img.getConfidence(),
                         img.getCreatedAt()
