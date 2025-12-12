@@ -1,0 +1,8 @@
+<h2>Upload image</h2>
+
+<input type="file" (change)="onFileSelected($event)">
+<button (click)="upload()">Upload</button>
+
+<p>{{ message }}</p>
+
+<a routerLink="/gallery">Go to gallery</a>
