@@ -31,3 +31,4 @@ build/
 
 ### Application Local ###
 src/main/resources/application-local.yaml
+/uploads/
