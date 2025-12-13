@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Image, ImageService } from '../services/image';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Image, ImageService} from '../services/image';
 
 @Component({
   selector: 'app-gallery',
@@ -20,7 +20,6 @@ export class GalleryComponent implements OnInit {
 
   loadImages(): void {
     this.imageService.list().subscribe(data => {
-      console.log('Images reçues:', data);
       this.images = data;
     });
   }

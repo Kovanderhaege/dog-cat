@@ -1,25 +1,29 @@
 <h2>Gallery</h2>
 
-<p>Nombre d’images : {{ images.length }}</p>
+<p>Image count : {{ images.length }}</p>
 
-<div *ngFor="let img of images">
-  <img
-    [src]="imageUrl(img.id)"
-    width="200"
-    alt="uploaded image"
-  >
+@for (img of images; track img.id) {
+  <div>
+    <img
+      [src]="imageUrl(img.id)"
+      width="200"
+      alt="uploaded image"
+    >
 
-  <p>Status: {{ img.status }}</p>
+    <p>Status: {{ img.status }}</p>
 
-  <p *ngIf="img.predictedLabel">
-    Label: {{ img.predictedLabel }} ({{ img.confidence }})
-  </p>
+    @if (img.predictedLabel) {
+      <p>
+        Label: {{ img.predictedLabel }} ({{ img.confidence }})
+      </p>
+    }
 
-  <button
-    *ngIf="img.status === 'PENDING'"
-    (click)="predict(img.id)">
-    Predict
-  </button>
+    @if (img.status === 'PENDING') {
+      <button (click)="predict(img.id)">
+        Predict
+      </button>
+    }
 
-  <hr>
-</div>
+    <hr>
+  </div>
+}
