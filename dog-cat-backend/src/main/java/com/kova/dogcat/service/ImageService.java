@@ -80,7 +80,7 @@ public class ImageService {
         img.setStatus(PredictionStatus.PENDING);
 
         try {
-            var result = classifier.classify(img.getFilePath());
+            var result = classifier.classify(Path.of(img.getFilePath()));
 
             img.setPredictedLabel(result.label());
             img.setConfidence(result.confidence());
