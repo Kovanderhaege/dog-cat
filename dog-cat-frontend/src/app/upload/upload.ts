@@ -1,33 +1,66 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ImageService } from '../services/image';
+import {Component, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ImageService} from '../services/image';
+import {forkJoin} from 'rxjs';
+import {MatCardModule} from '@angular/material/card';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './upload.html'
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule
+  ],
+  templateUrl: './upload.html',
+  styleUrls: ['./upload.css']
 })
 export class UploadComponent {
 
-  selectedFile?: File;
-  message = '';
+  files = signal<File[]>([]);
+  uploading = signal(false);
+  message = signal<string | null>(null);
 
   constructor(private imageService: ImageService) {}
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-    }
+  onFilesSelected(files: FileList | null) {
+    if (!files) return;
+    this.files.set(Array.from(files));
   }
 
-  upload() {
-    if (!this.selectedFile) return;
+  uploadAll() {
+    const files = this.files();
+    if (!files.length) return;
 
-    this.imageService.upload(this.selectedFile)
-      .subscribe(id => {
-        this.message = `Uploaded with id: ${id}`;
-      });
+    this.uploading.set(true);
+
+    forkJoin(
+      files.map(f => this.imageService.upload(f))
+    ).subscribe({
+      next: ids => {
+        this.message.set(`${ids.length} images uploaded`);
+        this.files.set([]);
+        this.uploading.set(false);
+      },
+      error: () => {
+        this.message.set('Upload failed');
+        this.uploading.set(false);
+      }
+    });
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!event.dataTransfer?.files?.length) return;
+    this.files.set(Array.from(event.dataTransfer.files));
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
   }
 }

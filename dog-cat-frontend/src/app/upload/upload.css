@@ -1,0 +1,57 @@
+.hero {
+  max-width: 900px;
+  margin: 80px auto 0;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 48px;
+}
+
+.dropzone {
+  background: white;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 64px 32px;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dropzone:hover {
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+.cloud {
+  font-size: 72px;
+  width: 72px;
+  height: 72px;
+  line-height: 72px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #9ca3af;
+}
+
+.dz-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.dz-or {
+  color: #9ca3af;
+}
+
+.dz-hint {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}

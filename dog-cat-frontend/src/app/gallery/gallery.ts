@@ -1,36 +1,59 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
+
+import {MatCardModule} from '@angular/material/card';
+import {MatButtonModule} from '@angular/material/button';
+import {MatChipsModule} from '@angular/material/chips';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+
 import {Image, ImageService} from '../services/image';
 
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './gallery.html'
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatChipsModule,
+    MatProgressSpinnerModule
+  ],
+  templateUrl: './gallery.html',
+  styleUrls: ['./gallery.css']
 })
-export class GalleryComponent implements OnInit {
+export class GalleryComponent {
 
-  images: Image[] = [];
+  images = signal<Image[]>([]);
+  predicting = signal<Set<string>>(new Set());
 
-  constructor(private imageService: ImageService) {}
-
-  ngOnInit(): void {
+  constructor(private imageService: ImageService) {
     this.loadImages();
   }
 
-  loadImages(): void {
+  loadImages() {
     this.imageService.list().subscribe(data => {
-      this.images = data;
+      this.images.set(data);
     });
   }
 
-  predict(id: string): void {
+  predict(id: string) {
+    this.predicting.update(s => new Set(s).add(id));
+
     this.imageService.predict(id).subscribe(() => {
+      this.predicting.update(s => {
+        const next = new Set(s);
+        next.delete(id);
+        return next;
+      });
       this.loadImages();
     });
   }
 
   imageUrl(id: string): string {
-  return this.imageService.imageUrl(id);
-}
+    return this.imageService.imageUrl(id);
+  }
+
+  normalizeConfidence(img: Image): number | null {
+    return img.confidence === null ? null : Math.round(img.confidence * 100);
+  }
 }

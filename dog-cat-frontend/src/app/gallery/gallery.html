@@ -1,29 +1,58 @@
-<h2>Gallery</h2>
+<div class="gallery">
 
-<p>Image count : {{ images.length }}</p>
+  @for (img of images(); track img.id) {
 
-@for (img of images; track img.id) {
-  <div>
-    <img
-      [src]="imageUrl(img.id)"
-      width="200"
-      alt="uploaded image"
-    >
+    <mat-card class="image-card">
 
-    <p>Status: {{ img.status }}</p>
+      <img
+        mat-card-image
+        [src]="imageUrl(img.id)"
+        alt="uploaded image"
+      />
 
-    @if (img.predictedLabel) {
-      <p>
-        Label: {{ img.predictedLabel }} ({{ img.confidence }})
-      </p>
-    }
+      <mat-card-content class="status-row">
 
-    @if (img.status === 'PENDING') {
-      <button (click)="predict(img.id)">
-        Predict
-      </button>
-    }
+        @if (img.predictedLabel) {
 
-    <hr>
-  </div>
-}
+          <mat-chip
+            class="status-chip"
+            [color]="img.predictedLabel === 'DOG' ? 'primary' : 'accent'"
+            selected>
+            {{ img.predictedLabel }}
+          </mat-chip>
+
+          @if (img.confidence !== null) {
+            <mat-chip class="confidence">
+              {{ (img.confidence * 100) | number:'1.0-0' }} %
+            </mat-chip>
+          }
+
+        } @else {
+
+          <mat-chip class="status-chip" selected>
+            PENDING
+          </mat-chip>
+
+          @if (predicting().has(img.id)) {
+            <mat-progress-spinner
+              diameter="20"
+              mode="indeterminate">
+            </mat-progress-spinner>
+          } @else {
+            <button
+              mat-button
+              color="primary"
+              (click)="predict(img.id)">
+              Predict
+            </button>
+          }
+
+        }
+
+      </mat-card-content>
+
+    </mat-card>
+
+  }
+
+</div>

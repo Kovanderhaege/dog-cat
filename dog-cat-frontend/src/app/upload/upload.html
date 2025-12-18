@@ -1,8 +1,28 @@
-<h2>Upload image</h2>
+<section class="hero">
+  <h1>Upload Your Image</h1>
+  <p class="subtitle">Choose an image to upload from your device.</p>
 
-<input type="file" (change)="onFileSelected($event)">
-<button (click)="upload()">Upload</button>
+  <div class="dropzone"
+       (click)="fileInput.click()"
+       (drop)="onDrop($event)"
+       (dragover)="onDragOver($event)">
 
-<p>{{ message }}</p>
+    <input type="file"
+           hidden
+           #fileInput
+           (change)="onFilesSelected(fileInput.files)" />
 
-<a routerLink="/gallery">Go to gallery</a>
+    <mat-icon class="cloud">cloud_upload</mat-icon>
+
+    <div class="dz-title">Drag & Drop your image here</div>
+    <div class="dz-or">or</div>
+
+    <button mat-raised-button color="primary">
+      Browse Files
+    </button>
+
+    <div class="dz-hint">
+      JPEG or PNG, Max file size: 1MB
+    </div>
+  </div>
+</section>

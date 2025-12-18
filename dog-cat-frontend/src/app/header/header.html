@@ -1,0 +1,20 @@
+<header class="topbar">
+  <div class="topbar-inner">
+
+    <div class="logo">
+      <img src="favicon.ico" alt="Dog or Cat logo" class="logo-icon">
+      <span class="logo-text">Dog or Cat</span>
+    </div>
+
+    <nav class="nav">
+      <a
+        routerLink="/upload"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Upload
+      </a>
+      <a routerLink="/gallery" routerLinkActive="active">Gallery</a>
+      <a routerLink="/about" routerLinkActive="active">About</a>
+    </nav>
+  </div>
+</header>
