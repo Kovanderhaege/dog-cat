@@ -1,8 +1,18 @@
-<h2>Upload image</h2>
-
-<input type="file" (change)="onFileSelected($event)">
-<button (click)="upload()">Upload</button>
-
-<p>{{ message }}</p>
-
-<a routerLink="/gallery">Go to gallery</a>
+<section class="upload-layout" aria-labelledby="upload-title">
+  <div class="intro"><p class="eyebrow">Un peu de curiosité, beaucoup de pixels</p><h2 id="upload-title">Chien ou chat ?<br><span>À vous de jouer.</span></h2><p class="muted">Une truffe, des moustaches, deux oreilles… Importez une photo et laissez notre modèle de vision identifier votre compagnon.</p>
+    <ol class="steps"><li><span>01</span><div><strong>Choisissez une photo</strong><p>Un chien ou un chat, de préférence bien visible.</p></div></li><li><span>02</span><div><strong>Importez-la dans la galerie</strong><p>Votre collection rassemble toutes vos images.</p></div></li><li><span>03</span><div><strong>Lancez l’évaluation</strong><p>Cliquez sur « Évaluer l’image » dans la galerie.</p></div></li></ol>
+    <a class="text-link" routerLink="/gallery">Explorer ma galerie →</a>
+  </div>
+  <div class="upload-panel"><div class="panel-heading"><h3>Une nouvelle rencontre</h3><span>JPG · PNG</span></div>
+    <label class="file-picker" [class.has-preview]="preview()">
+      @if (preview()) { <img [src]="preview()" alt="Aperçu de l’image sélectionnée"> } @else { <span class="upload-symbol" aria-hidden="true">↑</span><strong>Choisissez votre image</strong><span>Parcourir les fichiers de votre appareil</span> }
+      <input type="file" accept="image/jpeg,image/png" (change)="onFileSelected($event)" [disabled]="uploading()" aria-label="Choisir une image JPG ou PNG">
+      @if (preview()) { <span class="change-file">Choisir une autre image</span> }
+    </label>
+    @if (selectedFile(); as file) { <p class="file-name">{{ file.name }}</p> }
+    <button class="upload-button" (click)="upload()" [disabled]="!selectedFile() || uploading()" [attr.aria-busy]="uploading()">{{ uploading() ? 'Import en cours…' : 'Importer dans la galerie' }} <span aria-hidden="true">→</span></button>
+    <p class="hint">L’évaluation se lance ensuite depuis la galerie.</p>
+    @if (message()) { <div class="notice" role="status"><p>{{ message() }}</p><a class="button" routerLink="/gallery">Aller évaluer mon image →</a></div> }
+    @if (error()) { <p class="notice error" role="alert">{{ error() }}</p> }
+  </div>
+</section>

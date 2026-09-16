@@ -1,41 +1,42 @@
-# Machine Learning – Dog / Cat Classifier
+# DogCat — Modèle et données
 
-This directory contains all the logic related to training, evaluating,
-and exporting the image classification model
-(dog / cat / other).
+Le répertoire `ml/` rassemble les scripts de préparation des données, d’entraînement, d’évaluation et d’export du classificateur. Le modèle distingue les classes `cat`, `dog` et `other`.
 
-Training images are **not** versioned in this repository.
-This document describes where the data is located and how it is constructed.
+## Organisation
 
-## Data sources
+| Répertoire | Rôle |
+| --- | --- |
+| `datasets/` | Contrôle et répartition des données |
+| `train/` | Chargement, transformations, entraînement, métriques et calibration |
+| `export/` | Export ONNX et validation de la correspondance avec PyTorch |
+| `artifacts/` | Labels, prétraitement et seuil de confiance |
 
-### Dog / Cat
+## Approche
 
-- Dogs vs Cats Dataset (Kaggle)  
-  https://www.kaggle.com/c/dogs-vs-cats  
-  ~4,000 images
+Le réseau repose sur ResNet18 préentraîné sur ImageNet. Les paramètres du réseau initial sont gelés et sa couche finale est remplacée par une couche de classification à trois sorties. L’entraînement utilise PyTorch et le suivi de validation repose sur le score F1 macro.
 
-### Other
+L’export ONNX permet l’exécution dans le [backend Java](../dog-cat-backend/README.md). L’inférence applique un softmax aux sorties ; une confiance inférieure au seuil configuré conduit à la classe `other`, qui est également une classe d’entraînement.
 
-Images for the `other` class come from multiple sources in order to
-cover a wide visual diversity:
+Les paramètres de prétraitement décrivent des images RGB de 224 × 224 pixels et une normalisation ImageNet. Les ressources utilisées par l’application sont placées dans `dog-cat-backend/src/main/resources/ml/`.
 
-- Kaggle Human Images Dataset – Men and Women  
-  https://www.kaggle.com/datasets/snmahsa/human-images-dataset-men-and-women  
-  ~800 images
+## Sources de données
 
-- Kaggle Animals Detection Images Dataset  
-  https://www.kaggle.com/datasets/antoreepjana/animals-detection-images-dataset  
-  ~600 images
+Les images d’entraînement ne sont pas versionnées. Les volumes ci-dessous correspondent aux ordres de grandeur documentés pour la constitution du jeu de données du projet.
 
-- Kaggle Scene Classification Dataset  
-  https://www.kaggle.com/datasets/nitishabharathi/scene-classification  
-  ~800 images
+### Chiens et chats
 
-- Kaggle Vehicle Images Dataset  
-  https://www.kaggle.com/datasets/lyensoetanto/vehicle-images-dataset  
-  ~400 images
+| Source | Volume approximatif |
+| --- | --- |
+| [Dogs vs Cats — Kaggle](https://www.kaggle.com/c/dogs-vs-cats) | 4 000 images |
 
-- Kaggle Daily Objects Around the World Dataset (Dollar Street)  
-  https://www.kaggle.com/datasets/humansintheloop/dollar-street-dataset  
-  ~800 images
+### Classe `other`
+
+Cette classe regroupe des images de personnes, d’animaux, de scènes, de véhicules et d’objets afin de diversifier les exemples.
+
+| Source | Volume approximatif |
+| --- | --- |
+| [Human Images Dataset — Men and Women](https://www.kaggle.com/datasets/snmahsa/human-images-dataset-men-and-women) | 800 images |
+| [Animals Detection Images Dataset](https://www.kaggle.com/datasets/antoreepjana/animals-detection-images-dataset) | 600 images |
+| [Scene Classification Dataset](https://www.kaggle.com/datasets/nitishabharathi/scene-classification) | 800 images |
+| [Vehicle Images Dataset](https://www.kaggle.com/datasets/lyensoetanto/vehicle-images-dataset) | 400 images |
+| [Daily Objects Around the World — Dollar Street](https://www.kaggle.com/datasets/humansintheloop/dollar-street-dataset) | 800 images |

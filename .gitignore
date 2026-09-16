@@ -24,3 +24,4 @@ Thumbs.db
 # ===== Env / secrets =====
 application-local.yaml
 .env
+.env.example

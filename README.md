@@ -1,133 +1,39 @@
-# Dog / Cat Image Classifier — Full-Stack & ML Project
+# DogCat — Classification d’images
 
-This repository is a full-stack and machine learning project designed to demonstrate
-the complete lifecycle of an image classification system, from data preparation and
-model training to production-grade inference integrated into a backend service.
+DogCat est une application de classification d’images associant une interface Angular, une API Java et un modèle de vision exécuté localement. Les images importées sont classées comme `cat`, `dog` ou `other`, avec un score de confiance.
 
-The application allows users to upload images, store them, and trigger an AI-based
-prediction that classifies images as `dog`, `cat`, or `other`.
+Ce projet de démonstration couvre la préparation des données, l’entraînement du modèle et son intégration dans une application web. L’inférence repose sur ONNX Runtime dans le backend, sans appel à une API d’intelligence artificielle externe.
 
----
+## Fonctionnalités
 
-## Project Scope
+- Import de photos avec aperçu avant envoi.
+- Galerie avec statut, résultat et score de confiance.
+- Évaluation à la demande, réévaluation et nouvelle tentative après erreur.
+- Stockage des fichiers sur disque et des métadonnées dans PostgreSQL.
 
-This project intentionally avoids external AI APIs or black-box services.
-The model is trained locally, exported, and deployed as part of the backend.
+## Architecture
 
-The focus is on:
-- clean frontend/backend separation
-- reproducible ML training
-- deterministic inference in production
-- explicit model lifecycle management
+Le frontend transmet les images à l’API Spring Boot. Le backend conserve les fichiers dans `uploads/` et enregistre leurs métadonnées en base. Une demande d’évaluation déclenche l’inférence ONNX ; le résultat est persisté, puis affiché dans la galerie.
 
----
+| Composant | Technologies | Documentation |
+| --- | --- | --- |
+| Interface | Angular 21, TypeScript, signals, RxJS | [Frontend](dog-cat-frontend/README.md) |
+| API | Java 21, Spring Boot 4, JPA, ONNX Runtime | [Backend](dog-cat-backend/README.md) |
+| Base de données | PostgreSQL 17, Docker Compose | [PostgreSQL](docker/postgres/README.md) |
+| Machine learning | PyTorch, torchvision, ONNX | [Modèle et données](ml/README.md) |
 
-## Architecture Overview
+## Exécution locale
 
-High-level pipeline:
+L’application utilise PostgreSQL sur `localhost:5432`, l’API sur `http://localhost:8080` et le frontend sur `http://localhost:4200`. La racine du dépôt désigne le dossier contenant `compose.yaml`.
 
-Image (upload)
-→ Backend storage
-→ ONNX Runtime inference (Java)
-→ Softmax + confidence thresholding
-→ Persisted prediction result
-→ Frontend display
+Les prérequis sont Docker Compose avec des conteneurs Linux, Java 21 et une version de Node.js compatible avec Angular 21. Maven est fourni par le wrapper du backend.
 
+Le démarrage suit cet ordre : configuration des variables `DB_USER` et `DB_PASSWORD`, lancement de PostgreSQL, lancement de l’API, puis du frontend. Les commandes sont détaillées dans les README de chaque composant.
 
----
+Les identifiants locaux sont conservés dans un fichier `.env` ignoré par Git. Docker Compose le charge automatiquement ; le lancement Java nécessite leur transmission par le terminal ou par la configuration de l’IDE.
 
-## Machine Learning Pipeline
+## Modèle de classification
 
-- Task: image classification (`dog` / `cat` / `other`)
-- Model: ResNet18 (fine-tuned)
-- Training framework: PyTorch
-- Inference format: ONNX
-- Runtime: ONNX Runtime (Java)
+Le modèle utilise ResNet18 préentraîné sur ImageNet, dont la couche finale est adaptée aux classes `cat`, `dog` et `other`. Le backend applique un softmax aux sorties et renvoie `other` lorsque la confiance maximale est inférieure au seuil configuré.
 
-### Dataset
-
-- Dog / Cat images from public datasets
-- `other` class built from heterogeneous image sources
-- Dataset split: train / validation / test
-
-### Training
-
-- Transfer learning from ImageNet weights
-- Cross-entropy loss
-- Validation using macro F1-score
-- Explicit overfitting control
-
-### Inference Design
-
-- Model exported to ONNX
-- Numerical parity validated (PyTorch vs ONNX)
-- Confidence-based rejection using a calibrated threshold (τ)
-- Threshold applied outside the model as a business rule
-
----
-
-## Backend Features
-
-- Image upload and storage
-- Prediction lifecycle management (`PENDING`, `DONE`, `ERROR`)
-- ONNX-based image inference (CPU)
-- Deterministic prediction with confidence score
-- Persistent prediction results
-
----
-
-## Frontend Features
-
-- Image upload UI
-- Image gallery
-- Prediction trigger per image
-- Status and confidence display
-
----
-
-## Tech Stack
-
-### Backend
-
-- Java 21
-- Spring Boot
-- Spring Web
-- Spring Data JPA / Hibernate
-- PostgreSQL (Docker)
-- ONNX Runtime (Java)
-
-### Frontend
-
-- Angular (standalone components)
-- TypeScript
-- RxJS
-- Angular Router
-
----
-
-## Model Artifacts
-
-The following inference artifacts are versioned in the repository:
-
-- `model_v0.onnx`
-- `labels.json`
-- `preprocess.json`
-- `threshold.json`
-
-Training checkpoints and datasets are intentionally excluded.
-
----
-
-## What This Project Is / Is Not
-
-This project is:
-
-- a full-stack application with real ML inference
-- a demonstration of end-to-end ML integration
-- a training and portfolio project
-
-This project is not:
-
-- a production SaaS
-- a generic AutoML pipeline
-- a wrapper around third-party AI APIs
+Les ressources d’inférence sont regroupées dans `dog-cat-backend/src/main/resources/ml/` : `model_v0.onnx`, `labels.json`, `preprocess.json` et `threshold.json`. Les données d’entraînement et les checkpoints ne font pas partie du dépôt.
