@@ -15,7 +15,7 @@ describe('GalleryComponent', () => {
     const http = TestBed.inject(HttpTestingController);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    http.expectOne('http://localhost:8080/images').flush([
+    http.expectOne('/images').flush([
       { id: '1', status: 'PENDING', predictedLabel: null, confidence: null }
     ]);
     await fixture.whenStable();
@@ -24,8 +24,8 @@ describe('GalleryComponent', () => {
     await fixture.whenStable();
     expect(element.querySelector<HTMLButtonElement>('.evaluate')!.disabled).toBe(true);
     fixture.componentInstance.predict('1');
-    http.expectOne({ method: 'POST', url: 'http://localhost:8080/images/1/predict' }).flush(null);
-    http.expectOne('http://localhost:8080/images').flush([
+    http.expectOne({ method: 'POST', url: '/images/1/predict' }).flush(null);
+    http.expectOne('/images').flush([
       { id: '1', status: 'DONE', predictedLabel: 'cat', confidence: 0.9 }
     ]);
     await fixture.whenStable();
@@ -36,7 +36,7 @@ describe('GalleryComponent', () => {
     const fixture = TestBed.createComponent(GalleryComponent);
     const http = TestBed.inject(HttpTestingController);
     await fixture.whenStable();
-    http.expectOne('http://localhost:8080/images').flush([
+    http.expectOne('/images').flush([
       { id: 'failed', status: 'ERROR', predictedLabel: null, confidence: null }
     ]);
     await fixture.whenStable();
@@ -44,14 +44,14 @@ describe('GalleryComponent', () => {
     const button = element.querySelector<HTMLButtonElement>('.evaluate')!;
     expect(button.textContent).toContain('Réessayer');
     button.click();
-    http.expectOne('http://localhost:8080/images/failed/predict')
+    http.expectOne('/images/failed/predict')
       .flush(null, { status: 503, statusText: 'Unavailable' });
     await fixture.whenStable();
     expect(button.disabled).toBe(false);
     expect(element.querySelector('[role="alert"]')).not.toBeNull();
     button.click();
-    http.expectOne('http://localhost:8080/images/failed/predict').flush(null);
-    http.expectOne('http://localhost:8080/images').flush([
+    http.expectOne('/images/failed/predict').flush(null);
+    http.expectOne('/images').flush([
       { id: 'failed', status: 'DONE', predictedLabel: 'dog', confidence: 0.95 }
     ]);
     await fixture.whenStable();

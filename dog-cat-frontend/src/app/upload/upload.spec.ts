@@ -19,7 +19,7 @@ describe('UploadComponent', () => {
     fixture.componentInstance.selectedFile.set(new File(['image'], 'cat.png'));
     await fixture.whenStable();
     element.querySelector('button')!.click();
-    const request = http.expectOne({ method: 'POST', url: 'http://localhost:8080/images' });
+    const request = http.expectOne({ method: 'POST', url: '/images' });
     expect(request.request.body.get('file').name).toBe('cat.png');
     request.flush('image-id');
     await fixture.whenStable();
@@ -33,7 +33,7 @@ describe('UploadComponent', () => {
     fixture.componentInstance.selectedFile.set(new File(['image'], 'cat.png'));
     fixture.componentInstance.upload();
     fixture.componentInstance.upload();
-    http.expectOne('http://localhost:8080/images')
+    http.expectOne('/images')
       .flush(null, { status: 500, statusText: 'Server error' });
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;

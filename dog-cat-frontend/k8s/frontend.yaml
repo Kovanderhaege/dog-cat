@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dogcat-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dogcat-web
+  template:
+    metadata:
+      labels:
+        app: dogcat-web
+    spec:
+      containers:
+        - name: nginx
+          image: europe-west9-docker.pkg.dev/project-80b078d7-c8e9-47fb-abe/demo-repo/dogcat-web:v1
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dogcat-web
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  selector:
+    app: dogcat-web
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dogcat-api-ingress
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  selector:
+    app: demo-api
+  ports:
+    - port: 80
+      targetPort: 8080

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dogcat
+  annotations:
+    kubernetes.io/ingress.class: gce
+    ingress.gcp.kubernetes.io/pre-shared-cert: dogcat-tls
+spec:
+  defaultBackend:
+    service:
+      name: dogcat-web
+      port:
+        number: 80
+  rules:
+    - http:
+        paths:
+          - path: /images
+            pathType: Prefix
+            backend:
+              service:
+                name: dogcat-api-ingress
+                port:
+                  number: 80

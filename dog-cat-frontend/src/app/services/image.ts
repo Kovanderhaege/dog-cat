@@ -12,25 +12,25 @@ export interface Image {
 @Injectable({ providedIn: 'root' })
 export class ImageService {
 
-  private readonly apiUrl = 'http://localhost:8080';
+  private readonly imagesUrl = '/images';
 
   constructor(private http: HttpClient) {}
 
   upload(file: File): Observable<string> {
     const data = new FormData();
     data.append('file', file);
-    return this.http.post<string>(`${this.apiUrl}/images`, data);
+    return this.http.post<string>(this.imagesUrl, data);
   }
 
   list(): Observable<Image[]> {
-    return this.http.get<Image[]>(`${this.apiUrl}/images`);
+    return this.http.get<Image[]>(this.imagesUrl);
   }
 
   predict(id: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/images/${id}/predict`, {});
+    return this.http.post<void>(`${this.imagesUrl}/${id}/predict`, {});
   }
 
   imageUrl(id: string): string {
-    return `${this.apiUrl}/images/${id}/file`;
+    return `${this.imagesUrl}/${id}/file`;
   }
 }
