@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: europe-west9-docker.pkg.dev/project-80b078d7-c8e9-47fb-abe/demo-repo/dogcat-web:v1
+          image: europe-west9-docker.pkg.dev/project-80b078d7-c8e9-47fb-abe/demo-repo/dogcat-frontend:v1
           ports:
             - containerPort: 8080
           readinessProbe:

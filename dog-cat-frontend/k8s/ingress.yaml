@@ -4,7 +4,6 @@ metadata:
   name: dogcat
   annotations:
     kubernetes.io/ingress.class: gce
-    ingress.gcp.kubernetes.io/pre-shared-cert: dogcat-tls
 spec:
   defaultBackend:
     service:
