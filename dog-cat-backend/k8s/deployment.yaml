@@ -44,6 +44,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: GOOGLE_CLOUD_QUOTA_PROJECT
+              value: "project-80b078d7-c8e9-47fb-abe"
             - name: APP_GREETING
               value: "Bonjour depuis GKE"
           resources:

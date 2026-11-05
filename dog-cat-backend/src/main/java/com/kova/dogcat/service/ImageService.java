@@ -19,14 +19,18 @@ public class ImageService {
     private final ImagePredictionRepository repository;
 
     private final ImageClassificationService classifier;
+    private final SafeSearchService safeSearch;
 
     public ImageService(ImagePredictionRepository repository,
-                        ImageClassificationService classifier) {
+                        ImageClassificationService classifier, SafeSearchService safeSearch) {
         this.repository = repository;
         this.classifier = classifier;
+        this.safeSearch = safeSearch;
     }
 
     public UUID uploadImage(MultipartFile file) throws IOException {
+        byte[] content = file.getBytes();
+        safeSearch.check(content);
 
         Path uploadDir = Path.of("uploads");
         Files.createDirectories(uploadDir);
@@ -35,7 +39,7 @@ public class ImageService {
 
         Path destination = uploadDir.resolve(filename);
 
-        Files.write(destination, file.getBytes());
+        Files.write(destination, content);
 
         ImagePrediction img = new ImagePrediction();
         img.setFilePath(destination.toString());
