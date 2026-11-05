@@ -32,7 +32,9 @@ export class GalleryComponent implements OnInit {
       finalize(() => this.evaluating.update(ids => ids.filter(value => value !== id)))
     ).subscribe({
       next: data => this.images.set(data),
-      error: () => this.error.set('Impossible de terminer l’évaluation ou de récupérer son résultat. Réessayez dans un instant.')
+      error: response => this.error.set(response.status === 429
+        ? 'Évaluations trop rapprochées. Patientez cinq secondes avant de réessayer.'
+        : 'Impossible de terminer l’évaluation ou de récupérer son résultat. Réessayez dans un instant.')
     });
   }
   imageUrl(id: string): string { return this.imageService.imageUrl(id); }

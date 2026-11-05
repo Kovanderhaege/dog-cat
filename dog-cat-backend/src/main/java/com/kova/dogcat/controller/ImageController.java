@@ -2,6 +2,7 @@ package com.kova.dogcat.controller;
 
 import com.kova.dogcat.dto.ImagePredictionDto;
 import com.kova.dogcat.service.ImageService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,13 +18,17 @@ import java.util.UUID;
 public class ImageController {
 
     private final ImageService service;
+    private final ImageRequestLimit uploads = new ImageRequestLimit();
+    private final ImageRequestLimit predictions = new ImageRequestLimit();
 
     public ImageController(ImageService service) {
         this.service = service;
     }
 
     @PostMapping
-    public ResponseEntity<UUID> upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<UUID> upload(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
+        long delay = uploads.retryAfter(request.getRemoteAddr());
+        if (delay > 0) return ResponseEntity.status(429).header("Retry-After", Long.toString(delay)).build();
         UUID id = service.uploadImage(file);
         return ResponseEntity.ok(id);
     }
@@ -51,7 +56,9 @@ public class ImageController {
     }
 
     @PostMapping("/{id}/predict")
-    public ResponseEntity<Void> predict(@PathVariable UUID id) {
+    public ResponseEntity<Void> predict(@PathVariable UUID id, HttpServletRequest request) {
+        long delay = predictions.retryAfter(request.getRemoteAddr());
+        if (delay > 0) return ResponseEntity.status(429).header("Retry-After", Long.toString(delay)).build();
         service.predict(id);
         return ResponseEntity.ok().build();
     }

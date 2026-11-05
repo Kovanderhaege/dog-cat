@@ -8,6 +8,7 @@ const uploadErrors: Partial<Record<number, string>> = {
   400: 'Le fichier est illisible. Choisissez une image JPG ou PNG valide.',
   413: 'L’image est trop lourde. Réduisez sa taille puis réessayez.',
   422: 'Image refusée : la vérification a détecté un contenu potentiellement explicite ou violent.',
+  429: 'Imports trop rapprochés. Patientez cinq secondes avant de réessayer.',
   503: 'La vérification du contenu est temporairement indisponible. Réessayez plus tard.',
 };
 
