@@ -32,6 +32,16 @@
             body: formData
         });
 
+        if (!response.ok) {
+            const reasons = {
+              400: 'Le fichier est illisible. Choisissez une image JPG ou PNG valide.',
+              413: 'L’image est trop lourde. Réduisez sa taille puis réessayez.',
+              422: 'Image refusée : la vérification a détecté un contenu potentiellement explicite ou violent.',
+              503: 'La vérification du contenu est temporairement indisponible. Réessayez plus tard.',
+            };
+            document.getElementById("status").innerText = reasons[response.status] ?? "Échec de l’import. Réessayez plus tard.";
+            return;
+        }
         const text = await response.text();
         document.getElementById("status").innerText = "Uploaded with ID: " + text;
     });

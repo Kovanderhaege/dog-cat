@@ -1,7 +1,15 @@
 import {Component, OnDestroy, signal} from '@angular/core';
 import {RouterLink} from '@angular/router';
+import {HttpErrorResponse} from '@angular/common/http';
 import {finalize} from 'rxjs';
 import {ImageService} from '../services/image';
+
+const uploadErrors: Partial<Record<number, string>> = {
+  400: 'Le fichier est illisible. Choisissez une image JPG ou PNG valide.',
+  413: 'L’image est trop lourde. Réduisez sa taille puis réessayez.',
+  422: 'Image refusée : la vérification a détecté un contenu potentiellement explicite ou violent.',
+  503: 'La vérification du contenu est temporairement indisponible. Réessayez plus tard.',
+};
 
 @Component({
   selector: 'app-upload', standalone: true, imports: [RouterLink],
@@ -41,7 +49,9 @@ export class UploadComponent implements OnDestroy {
         this.message.set('Image importée ! Retrouvez-la dans la galerie pour lancer son évaluation.');
         this.selectedFile.set(undefined);
       },
-      error: () => this.error.set('L’import a échoué. Vérifiez que le serveur est disponible, puis réessayez.')
+      error: (response: HttpErrorResponse) => this.error.set(
+        uploadErrors[response.status] ?? 'L’import a échoué. Vérifiez que le serveur est disponible, puis réessayez.'
+      )
     });
   }
   private clearPreview(): void {
