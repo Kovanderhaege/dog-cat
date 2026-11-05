@@ -1,5 +1,9 @@
-<app-header></app-header>
-
-<main class="page">
-  <router-outlet />
-</main>
+<header class="site-header">
+  <a class="brand" routerLink="/upload" aria-label="DogCat, accueil"><span class="brand-icon" aria-hidden="true">D<span>c</span></span><h1>DogCat<span>VISION STUDIO</span></h1></a>
+  <nav aria-label="Navigation principale">
+    <a routerLink="/upload" routerLinkActive="active" ariaCurrentWhenActive="page">Importer</a>
+    <a routerLink="/gallery" routerLinkActive="active" ariaCurrentWhenActive="page">Galerie</a>
+  </nav>
+</header>
+<main><router-outlet /></main>
+<footer>DogCat <span>Une image. Un regard. Chien ou chat ?</span></footer>

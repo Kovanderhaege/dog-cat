@@ -1,59 +1,39 @@
-import {Component, signal} from '@angular/core';
+import {Component, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-
-import {MatCardModule} from '@angular/material/card';
-import {MatButtonModule} from '@angular/material/button';
-import {MatChipsModule} from '@angular/material/chips';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-
+import {RouterLink} from '@angular/router';
+import {finalize, switchMap} from 'rxjs';
 import {Image, ImageService} from '../services/image';
 
 @Component({
-  selector: 'app-gallery',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatChipsModule,
-    MatProgressSpinnerModule
-  ],
-  templateUrl: './gallery.html',
-  styleUrls: ['./gallery.css']
+  selector: 'app-gallery', standalone: true, imports: [CommonModule, RouterLink],
+  templateUrl: './gallery.html', styleUrl: './gallery.css'
 })
-export class GalleryComponent {
-
-  images = signal<Image[]>([]);
-  predicting = signal<Set<string>>(new Set());
-
-  constructor(private imageService: ImageService) {
-    this.loadImages();
-  }
-
-  loadImages() {
-    this.imageService.list().subscribe(data => {
-      this.images.set(data);
+export class GalleryComponent implements OnInit {
+  readonly images = signal<Image[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal('');
+  readonly evaluating = signal<string[]>([]);
+  constructor(private imageService: ImageService) {}
+  ngOnInit(): void { this.loadImages(); }
+  loadImages(): void {
+    this.loading.set(true);
+    this.error.set('');
+    this.imageService.list().pipe(finalize(() => this.loading.set(false))).subscribe({
+      next: data => this.images.set(data),
+      error: () => this.error.set('Impossible de charger les images. Vérifiez que le serveur est démarré, puis réessayez.')
     });
   }
-
-  predict(id: string) {
-    this.predicting.update(s => new Set(s).add(id));
-
-    this.imageService.predict(id).subscribe(() => {
-      this.predicting.update(s => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-      this.loadImages();
+  predict(id: string): void {
+    if (this.evaluating().includes(id)) return;
+    this.evaluating.update(ids => [...ids, id]);
+    this.error.set('');
+    this.imageService.predict(id).pipe(
+      switchMap(() => this.imageService.list()),
+      finalize(() => this.evaluating.update(ids => ids.filter(value => value !== id)))
+    ).subscribe({
+      next: data => this.images.set(data),
+      error: () => this.error.set('Impossible de terminer l’évaluation ou de récupérer son résultat. Réessayez dans un instant.')
     });
   }
-
-  imageUrl(id: string): string {
-    return this.imageService.imageUrl(id);
-  }
-
-  normalizeConfidence(img: Image): number | null {
-    return img.confidence === null ? null : Math.round(img.confidence * 100);
-  }
+  imageUrl(id: string): string { return this.imageService.imageUrl(id); }
 }

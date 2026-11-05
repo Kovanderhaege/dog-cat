@@ -1,23 +1,44 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { UploadComponent } from './upload';
 
-import { Upload } from './upload';
-
-describe('Upload', () => {
-  let component: Upload;
-  let fixture: ComponentFixture<Upload>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Upload]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Upload);
-    component = fixture.componentInstance;
+describe('UploadComponent', () => {
+  beforeEach(() => TestBed.configureTestingModule({
+    imports: [UploadComponent],
+    providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])]
+  }));
+  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  it('updates the view after an HTTP response without Zone.js', async () => {
+    const fixture = TestBed.createComponent(UploadComponent);
+    const http = TestBed.inject(HttpTestingController);
     await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('button')!.disabled).toBe(true);
+    fixture.componentInstance.selectedFile.set(new File(['image'], 'cat.png'));
+    await fixture.whenStable();
+    element.querySelector('button')!.click();
+    const request = http.expectOne({ method: 'POST', url: 'http://localhost:8080/images' });
+    expect(request.request.body.get('file').name).toBe('cat.png');
+    request.flush('image-id');
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Image importée !');
+    expect(element.querySelector('a')!.getAttribute('href')).toBe('/gallery');
   });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('keeps the selected file available to retry a failed upload', async () => {
+    const fixture = TestBed.createComponent(UploadComponent);
+    const http = TestBed.inject(HttpTestingController);
+    await fixture.whenStable();
+    fixture.componentInstance.selectedFile.set(new File(['image'], 'cat.png'));
+    fixture.componentInstance.upload();
+    fixture.componentInstance.upload();
+    http.expectOne('http://localhost:8080/images')
+      .flush(null, { status: 500, statusText: 'Server error' });
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[role="alert"]')).not.toBeNull();
+    expect(element.querySelector('button')!.disabled).toBe(false);
+    expect(fixture.componentInstance.selectedFile()?.name).toBe('cat.png');
   });
 });

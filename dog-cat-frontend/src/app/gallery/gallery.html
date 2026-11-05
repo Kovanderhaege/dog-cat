@@ -1,58 +1,25 @@
-<div class="gallery">
-
-  @for (img of images(); track img.id) {
-
-    <mat-card class="image-card">
-
-      <img
-        mat-card-image
-        [src]="imageUrl(img.id)"
-        alt="uploaded image"
-      />
-
-      <mat-card-content class="status-row">
-
-        @if (img.predictedLabel) {
-
-          <mat-chip
-            class="status-chip"
-            [color]="img.predictedLabel === 'DOG' ? 'primary' : 'accent'"
-            selected>
-            {{ img.predictedLabel }}
-          </mat-chip>
-
-          @if (img.confidence !== null) {
-            <mat-chip class="confidence">
-              {{ (img.confidence * 100) | number:'1.0-0' }} %
-            </mat-chip>
-          }
-
-        } @else {
-
-          <mat-chip class="status-chip" selected>
-            PENDING
-          </mat-chip>
-
-          @if (predicting().has(img.id)) {
-            <mat-progress-spinner
-              diameter="20"
-              mode="indeterminate">
-            </mat-progress-spinner>
-          } @else {
-            <button
-              mat-button
-              color="primary"
-              (click)="predict(img.id)">
-              Predict
-            </button>
-          }
-
-        }
-
-      </mat-card-content>
-
-    </mat-card>
-
-  }
-
-</div>
+<section aria-labelledby="gallery-title">
+  <div class="page-heading">
+    <div><p class="eyebrow">Votre collection</p><h2 id="gallery-title">La galerie des petits compagnons.</h2><p class="muted">Lancez une évaluation pour découvrir ce que le modèle reconnaît.</p></div>
+    <a class="button" routerLink="/upload">+ Importer une image</a>
+  </div>
+  <div class="toolbar"><span>{{ images().length }} image{{ images().length > 1 ? 's' : '' }}</span><button class="secondary" (click)="loadImages()" [disabled]="loading()">Actualiser</button></div>
+  @if (error()) { <p class="notice error" role="alert">{{ error() }}</p> }
+  @if (loading()) { <p class="notice" role="status">Chargement de la galerie…</p> }
+  <div class="gallery-grid">
+    @for (img of images(); track img.id; let index = $index) {
+      <article class="image-card" [attr.aria-busy]="evaluating().includes(img.id)">
+        <div class="photo"><img [src]="imageUrl(img.id)" [alt]="'Image importée ' + (index + 1)" loading="lazy"></div>
+        <div class="card-content">
+          <div class="card-heading"><h3>Compagnon {{ index + 1 }}</h3><span class="badge" [class.failed]="img.status === 'ERROR'" [class.done]="img.status === 'DONE'">{{ evaluating().includes(img.id) ? 'Analyse…' : img.status === 'DONE' ? 'Évaluée' : img.status === 'ERROR' ? 'Échec' : 'À découvrir' }}</span></div>
+          @if (img.status === 'DONE' && img.predictedLabel) {
+            <div class="result"><strong>{{ img.predictedLabel === 'cat' ? 'Chat' : img.predictedLabel === 'dog' ? 'Chien' : img.predictedLabel }}</strong>@if (img.confidence !== null) { <span>{{ img.confidence | percent:'1.0-1' }} de confiance</span> }</div>
+          } @else { <p class="description">{{ img.status === 'ERROR' ? 'Le modèle n’a pas pu analyser cette image. Vous pouvez réessayer.' : 'Chien ou chat ? Laissez le modèle examiner cette image.' }}</p> }
+          <button class="evaluate" (click)="predict(img.id)" [disabled]="evaluating().includes(img.id)" [attr.aria-busy]="evaluating().includes(img.id)">{{ evaluating().includes(img.id) ? 'Évaluation en cours…' : img.status === 'DONE' ? 'Réévaluer l’image' : img.status === 'ERROR' ? 'Réessayer l’évaluation' : 'Évaluer l’image' }}</button>
+        </div>
+      </article>
+    } @empty {
+      @if (!loading() && !error()) { <div class="empty"><span aria-hidden="true">＋</span><h3>Votre galerie attend ses premières images.</h3><p class="muted">Importez la photo d’un chien ou d’un chat pour commencer.</p><a class="button" routerLink="/upload">Importer une image</a></div> }
+    }
+  </div>
+</section>

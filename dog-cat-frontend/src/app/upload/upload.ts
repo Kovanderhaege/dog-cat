@@ -1,66 +1,52 @@
-import {Component, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, signal} from '@angular/core';
+import {RouterLink} from '@angular/router';
+import {finalize} from 'rxjs';
 import {ImageService} from '../services/image';
-import {forkJoin} from 'rxjs';
-import {MatCardModule} from '@angular/material/card';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
 
 @Component({
-  selector: 'app-upload',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule
-  ],
-  templateUrl: './upload.html',
-  styleUrls: ['./upload.css']
+  selector: 'app-upload', standalone: true, imports: [RouterLink],
+  templateUrl: './upload.html', styleUrl: './upload.css'
 })
-export class UploadComponent {
-
-  files = signal<File[]>([]);
-  uploading = signal(false);
-  message = signal<string | null>(null);
-
+export class UploadComponent implements OnDestroy {
+  readonly selectedFile = signal<File | undefined>(undefined);
+  readonly preview = signal('');
+  readonly message = signal('');
+  readonly error = signal('');
+  readonly uploading = signal(false);
   constructor(private imageService: ImageService) {}
-
-  onFilesSelected(files: FileList | null) {
-    if (!files) return;
-    this.files.set(Array.from(files));
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    this.clearPreview();
+    this.selectedFile.set(undefined);
+    this.message.set('');
+    this.error.set('');
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      this.error.set('Choisissez une image au format JPG ou PNG.');
+      input.value = '';
+      return;
+    }
+    this.selectedFile.set(file);
+    this.preview.set(URL.createObjectURL(file));
   }
-
-  uploadAll() {
-    const files = this.files();
-    if (!files.length) return;
-
+  upload(): void {
+    const file = this.selectedFile();
+    if (!file || this.uploading()) return;
     this.uploading.set(true);
-
-    forkJoin(
-      files.map(f => this.imageService.upload(f))
-    ).subscribe({
-      next: ids => {
-        this.message.set(`${ids.length} images uploaded`);
-        this.files.set([]);
-        this.uploading.set(false);
+    this.message.set('');
+    this.error.set('');
+    this.imageService.upload(file).pipe(finalize(() => this.uploading.set(false))).subscribe({
+      next: () => {
+        this.message.set('Image importée ! Retrouvez-la dans la galerie pour lancer son évaluation.');
+        this.selectedFile.set(undefined);
       },
-      error: () => {
-        this.message.set('Upload failed');
-        this.uploading.set(false);
-      }
+      error: () => this.error.set('L’import a échoué. Vérifiez que le serveur est disponible, puis réessayez.')
     });
   }
-
-  onDrop(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (!event.dataTransfer?.files?.length) return;
-    this.files.set(Array.from(event.dataTransfer.files));
+  private clearPreview(): void {
+    if (this.preview()) URL.revokeObjectURL(this.preview());
+    this.preview.set('');
   }
-
-  onDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
+  ngOnDestroy(): void { this.clearPreview(); }
 }
