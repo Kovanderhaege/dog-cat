@@ -1,3 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dogcat-api
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,11 +21,25 @@ spec:
       maxUnavailable: 0
   template:
     metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
       labels:
         app: demo-api
     spec:
+      serviceAccountName: dogcat-api
+      volumes:
+        - name: images
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            readOnly: false
+            volumeAttributes:
+              bucketName: "dogcat-images-80b078d7-c8e9-47fb-abe"
+              mountOptions: "uid=1001"
       containers:
         - name: demo-api
+          volumeMounts:
+            - name: images
+              mountPath: /app/uploads
           image: europe-west9-docker.pkg.dev/project-80b078d7-c8e9-47fb-abe/demo-repo/dogcat@sha256:ca8b4389c406826c47715ac232b2a4ace24ddc9ccb3335f3bb38fb237c309a01
           ports:
             - containerPort: 8080
